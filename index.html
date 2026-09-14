@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✦ Genshin Impact Ultimate Custom Wish Sim ✦</title>
+    <title>✦ Genshin Impact Wish Simulator v2.6 ✦</title>
     <style>
         body { 
             background: radial-gradient(circle at center, #161b29 0%, #080a10 100%); 
@@ -45,20 +45,18 @@
             border: 1px solid #232936;
             padding: 20px;
         }
-        /* Firewall-Proof Base64 Character Artwork Node */
-        .gacha-avatar {
+        /* Graphic Window Grid container */
+        .art-viewport {
             width: 260px;
             height: 260px;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
             display: none;
-            filter: drop-shadow(0 0 25px currentColor);
+            justify-content: center;
+            align-items: center;
             animation: wishReveal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.15) forwards;
         }
         @keyframes wishReveal {
-            0% { transform: scale(0.5); opacity: 0; filter: brightness(2); }
-            100% { transform: scale(1); opacity: 1; filter: brightness(1); }
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
         .char-name { font-size: 30px; font-weight: bold; margin-top: 25px; display: none; letter-spacing: 2px; }
         .stars { font-size: 24px; color: #ffcc00; margin-top: 5px; display: none; letter-spacing: 3px; }
@@ -73,7 +71,7 @@
             <button onclick="pull()">Single Wish</button>
             <div class="display-window">
                 <div id="statusText" style="font-size: 18px; color: #5f6d85;">Awaiting dynamic alignment coordinates...</div>
-                <div id="avatarBox" class="gacha-avatar"></div>
+                <div id="artBox" class="art-viewport"></div>
                 <div id="nameDiv" class="char-name"></div>
                 <div id="starDiv" class="stars">★★★★★</div>
             </div>
@@ -81,51 +79,48 @@
     </div>
 
     <script>
-        // High-definition graphics stored entirely as clean, unblockable code lines
-        const database = [
-            { 
-                name: "Raiden Shogun (⚡ Electro)", 
-                color: "#ca70ff",
-                // Official Vector Art Layer: Raiden's Kimono Hair + Glowing Sword Pull Geometry
-                img: "data:image/svg+xml;utf8,<svg xmlns='http://w3.org' viewBox='0 0 100 100'><path d='M30 25c-5 15-5 35 5 50h30c10-15 10-35 5-50z' fill='%23281d42'/><path d='M35 30q-10 20 5 45q10 5 20 0q15-25 5-45z' fill='%233a2b63'/><path d='M50 10v60' stroke='%23ffffff' stroke-width='4' stroke-linecap='round' filter='blur(1px)'/><path d='M50 15v45' stroke='%23e6b8ff' stroke-width='2' stroke-linecap='round'/><path d='M42 22h16M38 35l6 4-3 8M62 35l-6 4 3 8' stroke='%23cc66ff' stroke-width='1.5' fill='none'/><circle cx='43' cy='38' r='1.5' fill='%23fff'/><circle cx='57' cy='38' r='1.5' fill='%23fff'/></svg>"
-            },
-            { 
-                name: "Zhongli (🪨 Geo)", 
-                color: "#ffaa00",
-                // Official Vector Art Layer: Zhongli's Shoulder Silhouette + Crystal Core Spear
-                img: "data:image/svg+xml;utf8,<svg xmlns='http://w3.org' viewBox='0 0 100 100'><path d='M25 40l25-15 25 15v35H25z' fill='%23362a1a'/><path d='M32 43l18-11 18 11v27H32z' fill='%234d3d28'/><path d='M50 5v85' stroke='%23ffcc00' stroke-width='3' stroke-linecap='round'/><polygon points='50,5 44,18 56,18' fill='%23fff'/><rect x='44' y='35' width='12' height='12' fill='none' stroke='%23ffaa00' stroke-width='2' transform='rotate(45 50 41)'/></svg>"
-            },
-            { 
-                name: "Furina (💧 Hydro)", 
-                color: "#00ccff",
-                // Official Vector Art Layer: Furina's Dueling Tophat + Ocean Ribbon Rapier
-                img: "data:image/svg+xml;utf8,<svg xmlns='http://w3.org' viewBox='0 0 100 100'><path d='M35 35l5-20h20l5 20z' fill='%231b324d' stroke='%2300ccff' stroke-width='1.5'/><circle cx='50' cy='23' r='3.5' fill='%2300ccff'/><path d='M20 80l60-60' stroke='%23ffffff' stroke-width='3' stroke-linecap='round'/><path d='M25 75l50-50' stroke='%2300ccff' stroke-width='1' stroke-linecap='round'/><circle cx='35' cy='48' r='3' fill='none' stroke='%2300ccff'/><circle cx='65' cy='52' r='4' fill='none' stroke='%2300ccff'/></svg>"
-            }
-        ];
+        // Injecting direct vector math shapes so no blank background can happen
+        const raidenVector = `<svg width="220" height="220" viewBox="0 0 100 100" xmlns="http://w3.org"><circle cx="50" cy="50" r="46" fill="#1d163a" stroke="#ca70ff" stroke-width="3"/><path d="M30 35c-5 10-3 35 5 45h30c8-10 10-35 5-45z" fill="#2d2154"/><path d="M50 15v55" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/><path d="M50 20v40" stroke="#ca70ff" stroke-width="2.5" stroke-linecap="round"/><path d="M36 40l8 4M64 40l-8 4" stroke="#ffffff" stroke-width="2"/><circle cx="43" cy="45" r="2" fill="#fff"/><circle cx="57" cy="45" r="2" fill="#fff"/></svg>`;
+        
+        const zhongliVector = `<svg width="220" height="220" viewBox="0 0 100 100" xmlns="http://w3.org"><circle cx="50" cy="50" r="46" fill="#281e13" stroke="#ffaa00" stroke-width="3"/><path d="M28 45l22-15 22 15v30H28z" fill="#3c2d1c"/><path d="M50 10v75" stroke="#ffaa00" stroke-width="4" stroke-linecap="round"/><polygon points="50,10 44,22 56,22" fill="#ffffff"/><rect x="44" y="38" width="12" height="12" fill="none" stroke="#ffaa00" stroke-width="2.5" transform="rotate(45 50 44)"/></svg>`;
+
+        const furinaVector = `<svg width="220" height="220" viewBox="0 0 100 100" xmlns="http://w3.org"><circle cx="50" cy="50" r="46" fill="#122236" stroke="#00ccff" stroke-width="3"/><path d="M35 38l5-18h20l5 18z" fill="#1c3352" stroke="#00ccff" stroke-width="2"/><circle cx="50" cy="25" r="4" fill="#00ccff"/><path d="M25 75l50-50" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/><circle cx="35" cy="52" r="3.5" fill="none" stroke="#00ccff" stroke-width="1.5"/></svg>`;
 
         function pull() {
             document.getElementById("statusText").style.display = "block";
-            document.getElementById("statusText").innerText = "💫 Synchronizing local stardust arrays...";
-            document.getElementById("avatarBox").style.display = "none";
+            document.getElementById("statusText").innerText = "💫 Rendering banner template graphics local-side...";
+            document.getElementById("artBox").style.display = "none";
             document.getElementById("nameDiv").style.display = "none";
             document.getElementById("starDiv").style.display = "none";
 
             setTimeout(() => {
                 document.getElementById("statusText").style.display = "none";
-                let pick = database[Math.floor(Math.random() * database.length)];
+                let roll = Math.floor(Math.random() * 3);
                 
-                let boxEl = document.getElementById("avatarBox");
-                boxEl.style.backgroundImage = `url("${pick.img}")`;
-                boxEl.style.color = pick.color;
-                boxEl.style.display = "block";
-
+                let artBox = document.getElementById("artBox");
                 let nameEl = document.getElementById("nameDiv");
-                nameEl.innerText = pick.name;
-                nameEl.style.color = pick.color;
-                nameEl.style.display = "block";
 
+                if (roll === 0) {
+                    artBox.innerHTML = raidenVector;
+                    artBox.style.filter = "drop-shadow(0 0 25px #ca70ff)";
+                    nameEl.innerText = "Raiden Shogun (⚡ Electro)";
+                    nameEl.style.color = "#ca70ff";
+                } else if (roll === 1) {
+                    artBox.innerHTML = zhongliVector;
+                    artBox.style.filter = "drop-shadow(0 0 25px #ffaa00)";
+                    nameEl.innerText = "Zhongli (🪨 Geo)";
+                    nameEl.style.color = "#ffaa00";
+                } else {
+                    artBox.innerHTML = furinaVector;
+                    artBox.style.filter = "drop-shadow(0 0 25px #00ccff)";
+                    nameEl.innerText = "Furina (💧 Hydro)";
+                    nameEl.style.color = "#00ccff";
+                }
+
+                artBox.style.display = "flex";
+                nameEl.style.display = "block";
                 document.getElementById("starDiv").style.display = "block";
-            }, 600);
+            }, 500);
         }
     </script>
 </body>
